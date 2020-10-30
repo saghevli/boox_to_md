@@ -18,8 +18,6 @@ const (
 )
 
 func main() {
-	fmt.Println("Hello, World!")
-
 	switch len(os.Args) {
 	case 1:
 		fmt.Print("Please supply an input file.")
