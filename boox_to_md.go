@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"regexp"
 )
 
 type CaptureMode int
@@ -26,7 +27,8 @@ func main() {
 	}
 	lines := readLines(os.Args[1])
 	notes, headings := extractNotes(lines)
-	printMd(notes, headings)
+	title := getTitle(lines)
+	printMd(title, notes, headings)
 }
 
 func readLines(filePath string) []string {
@@ -75,7 +77,9 @@ func extractNotes(lines []string) (notes [][]string, headings []string) {
 			if strings.HasPrefix(line, "【Original Text】") {
 				note = line[19:]
 			} else if strings.HasPrefix(line, "【Annotations】") {
-				notes[len(headings)-1] = append(notes[len(headings)-1], "`"+note+"`")
+				// backticks vs block quotes
+				// notes[len(headings)-1] = append(notes[len(headings)-1], "`"+note+"`")
+				notes[len(headings)-1] = append(notes[len(headings)-1], ">  "+note)
 				note = ""
 				annotation = line[17:]
 				mode++
@@ -97,14 +101,25 @@ func extractNotes(lines []string) (notes [][]string, headings []string) {
 	return notes, headings
 }
 
-func printMd(notes [][]string, headings []string) {
+func getTitle(lines []string) (title string) {
+	re := regexp.MustCompile(".*<<(.*)>>")
+	match := re.FindStringSubmatch(lines[0])
+	return match[1]
+}
+
+func printMd(title string, notes [][]string, headings []string) {
 	if len(notes) != len(headings) {
 		log.Fatal("Notes and headings are different lengths.")
 	}
+	fmt.Print("# " + title + "\n")
 	for i := 0; i < len(notes); i++ {
 		fmt.Print("## " + headings[i] + "\n")
 		for j := 0; j < len(notes[i]); j++ {
-			fmt.Print("*  " + notes[i][j] + "\n")
-		}
+			if notes[i][j][0]  == '>' {
+				fmt.Print(notes[i][j] + "\n")
+			} else {
+				fmt.Print("*  " + notes[i][j] + "\n") 
+			}
+ 		}
 	}
 }
