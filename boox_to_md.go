@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"regexp"
+	"strings"
 )
 
 type CaptureMode int
@@ -53,7 +53,6 @@ func readLines(filePath string) []string {
 // the notes within them.
 // Annotations are emitted as notes that are not wrapped in backticks.
 func extractNotes(lines []string) (notes [][]string, headings []string) {
-	headingIndex := 0
 	mode := Heading
 	note, annotation := "", ""
 	var emptySlice []string
@@ -68,7 +67,6 @@ func extractNotes(lines []string) (notes [][]string, headings []string) {
 			if len(headings) == 0 || headings[len(headings)-1] != line {
 				headings = append(headings, line)
 				notes = append(notes, emptySlice)
-				headingIndex++
 			}
 			mode++
 		case Time:
@@ -84,7 +82,7 @@ func extractNotes(lines []string) (notes [][]string, headings []string) {
 				annotation = line[17:]
 				mode++
 			} else {
-				note = note + line
+				note = note + " " + line
 			}
 		case Annotation:
 			if strings.HasPrefix(line, "-------------------") {
@@ -94,7 +92,7 @@ func extractNotes(lines []string) (notes [][]string, headings []string) {
 				annotation = ""
 				mode = Heading
 			} else {
-				annotation = annotation + line
+				annotation = annotation + " " + line
 			}
 		}
 	}
@@ -115,11 +113,11 @@ func printMd(title string, notes [][]string, headings []string) {
 	for i := 0; i < len(notes); i++ {
 		fmt.Print("## " + headings[i] + "\n")
 		for j := 0; j < len(notes[i]); j++ {
-			if notes[i][j][0]  == '>' {
+			if notes[i][j][0] == '>' {
 				fmt.Print(notes[i][j] + "\n")
 			} else {
-				fmt.Print("*  " + notes[i][j] + "\n") 
+				fmt.Print("*  " + notes[i][j] + "\n")
 			}
- 		}
+		}
 	}
 }
